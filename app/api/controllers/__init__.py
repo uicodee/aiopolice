@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from .test import router as test_router
+from .user import router as user_router
 
 
 def setup(app: FastAPI) -> None:
     app.include_router(
-        router=test_router,
-        tags=["test"]
+        router=user_router,
+        tags=["user"]
     )
