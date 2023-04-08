@@ -2,7 +2,7 @@ import uvicorn as uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api import controllers
+from app.api import controllers, dependencies
 from app.config import load_config
 from app.infrastructure.database.factory import create_pool, make_connection_string
 
@@ -21,6 +21,7 @@ def main() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    dependencies.setup(app, pool)
     controllers.setup(app)
     return app
 
