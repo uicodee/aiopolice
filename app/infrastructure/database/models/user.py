@@ -12,3 +12,4 @@ class User(BaseModel):
     full_name = Column(String, nullable=False)
     username = Column(String(length=255), nullable=True)
     status = Column(Enum(types.Status), nullable=False, default=types.Status.REJECT)
+    role = Column(Enum(types.Role), nullable=False, default=types.Role.USER)
