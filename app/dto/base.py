@@ -1,10 +1,11 @@
 from datetime import datetime
 
+import pytz
 from pydantic import BaseModel, Field
 
 
 def serialize_time(value: datetime) -> str:
-    return value.strftime('%d.%m.%Y %H:%M')
+    return value.astimezone(tz=pytz.timezone('Asia/Tashkent')).strftime('%d.%m.%Y %H:%M')
 
 
 class Base(BaseModel):

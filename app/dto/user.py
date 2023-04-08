@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from app.dto import Status, Base
+from app.dto import Status, Base, Role
 
 
 class User(Base):
@@ -9,3 +9,4 @@ class User(Base):
     full_name: str = Field(alias='fullName')
     username: str | None
     status: Status
+    role: Role
