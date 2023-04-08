@@ -1,10 +1,8 @@
-import datetime
-
 from fastapi import APIRouter, Query, Depends, HTTPException, status
 
 from app import dto
 from app.api import schems
-from app.api.dependencies import dao_provider
+from app.api.dependencies import dao_provider, get_admin
 from app.infrastructure.database.dao.holder import HolderDao
 
 router = APIRouter(prefix="/user")
@@ -13,9 +11,12 @@ router = APIRouter(prefix="/user")
 @router.get(
     path="/all",
     description="Get all users",
-    response_model=list[dto.User]
+    response_model=list[dto.User],
+    dependencies=[Depends(get_admin)]
 )
-async def get_users(dao: HolderDao = Depends(dao_provider)) -> list[dto.User]:
+async def get_users(
+        dao: HolderDao = Depends(dao_provider)
+) -> list[dto.User]:
     return await dao.user.get_users()
 
 
@@ -48,14 +49,13 @@ async def new_user(
     response_model=dto.User
 )
 async def get_user(
-        telegram_id: int = Query(gt=0)
+        telegram_id: int = Query(gt=0),
+        dao: HolderDao = Depends(dao_provider)
 ) -> dto.User:
-    return dto.User(
-        id=1,
-        created_at=datetime.datetime.now(),
-        updated_at=datetime.datetime.now(),
-        telegram_id=1234567,
-        full_name="Example example",
-        username="@username",
-        status=dto.Status.REJECT
-    )
+    user = await dao.user.get_user(telegram_id=telegram_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not found"
+        )
+    return user

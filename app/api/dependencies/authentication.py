@@ -14,7 +14,7 @@ from app.infrastructure.database.dao.holder import HolderDao
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
-def get_user(token: str = Depends(oauth2_scheme)) -> dto.User:
+def get_admin(token: str = Depends(oauth2_scheme)) -> dto.Admin:
     raise NotImplementedError
 
 
@@ -40,26 +40,26 @@ class AuthProvider:
     def get_password_hash(self, password: str) -> str:
         return self.pwd_context.hash(password)
 
-    async def authenticate_user(
+    async def authenticate_admin(
             self,
             email: str,
             password: str,
             dao: HolderDao
-    ) -> dto.User:
+    ) -> dto.Admin:
         http_status_401 = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        user = await dao.user.get_user_with_password(email=email)
-        if user is None:
+        admin = await dao.admin.get_admin_with_password(email=email)
+        if admin is None:
             raise http_status_401
         if not self.verify_password(
                 password,
-                user.password,
+                admin.password,
         ):
             raise http_status_401
-        return user
+        return admin
 
     def create_access_token(
             self,
@@ -79,22 +79,22 @@ class AuthProvider:
             type="bearer",
         )
 
-    def create_user_token(
+    def create_admin_token(
             self,
-            user: dto.User
+            admin: dto.Admin
     ) -> dto.Token:
         return self.create_access_token(
             data={
-                "sub": user.email
+                "sub": admin.email
             },
             expires_delta=self.access_token_expire,
         )
 
-    async def get_current_user(
+    async def get_current_admin(
             self,
             token: str = Depends(oauth2_scheme),
             dao: HolderDao = Depends(dao_provider),
-    ) -> dto.User:
+    ) -> dto.Admin:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -111,7 +111,7 @@ class AuthProvider:
                 raise credentials_exception
         except JWTError:
             raise credentials_exception
-        user = await dao.user.get_user(email=email)
-        if user is None:
+        admin = await dao.admin.get_admin(email=email)
+        if admin is None:
             raise credentials_exception
-        return user
+        return admin
